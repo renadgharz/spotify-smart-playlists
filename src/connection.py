@@ -12,16 +12,16 @@ load_dotenv(dotenv_path)
 client_id = os.getenv('CLIENT_ID')
 client_secret = os.getenv('CLIENT_SECRET')
 
-def create_spotify_oauth():
+def create_spotify_oauth(redirect_uri):
     return SpotifyOAuth(
         client_id=client_id,
         client_secret=client_secret,
-        redirect_uri=url_for(redirect('authorize')),  # Update with your redirect URI
+        redirect_uri=redirect_uri,
         scope='playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public user-library-read'
     )
 
 def get_token():
-    sp_oauth = create_spotify_oauth()
+    sp_oauth = create_spotify_oauth(redirect_uri='localhost:5000/authorize/')
     token_info = sp_oauth.get_access_token()
     
     now = int(time.time())
@@ -32,15 +32,24 @@ def get_token():
  
     return token_info
 
-def get_tracks(playlists, token_info):
+def sp_get_tracks(playlist, token_info):
     sp = spotipy.Spotify(auth=token_info['access_token'])
     
-    all_tracks = []
-    
-    for playlist in playlists:
-        tracks = sp.playlist_items(playlist_id=playlist)
-        all_tracks.extend(tracks['items'])
-        
+    all_tracks = sp.playlist_items(playlist_id=playlist)
+
     return all_tracks
+
+def sp_get_audio_features(track_id, token_info):
+    sp = spotipy.Spotify(auth=token_info['access_token'])  
     
+    audio_features = sp.audio_features(tracks=track_id)
+    
+    return audio_features
+
+def sp_get_audio_analysis(track_id, token_info):
+    sp = spotipy.Spotify(auth=token_info['access_token'])  
+    
+    audio_analysis = sp.audio_analysis(tracks=track_id)
+    
+    return audio_analysis
     
