@@ -5,6 +5,7 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import time
 from flask import url_for, redirect
+import pandas as pd
 
 dotenv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.env'))
 load_dotenv(dotenv_path)
@@ -32,24 +33,51 @@ def get_token():
  
     return token_info
 
-def sp_get_tracks(playlist, token_info):
+def get_tracks(playlist, token_info):
     sp = spotipy.Spotify(auth=token_info['access_token'])
     
     all_tracks = sp.playlist_items(playlist_id=playlist)
 
     return all_tracks
 
-def sp_get_audio_features(track_id, token_info):
+def get_tracks_to_df(tracks):
+    data = []
+    
+    for track in tracks:
+        d = {
+            'track_id': track['track']['id'],
+            'track_name': track['track']['name'],
+            'album_id': track['track']['album']['id'],
+            'album_name': track['track']['album']['name'],
+            'album_date': track['track']['album']['release_date'],
+            'artist_ids': [artist['id'] for artist in track['track']['album']['artists']],
+            'artist_names': [artist['name'] for artist in track['track']['album']['artists']],
+            'artist_number': len(track['track']['album']['artists'][0:]),
+            'duration_ms': track['track']['duration_ms'],
+            'explicit': track['track']['explicit'],
+            'popularity': track['track']['popularity'],
+            'preview_url': track['track']['preview_url'],
+            'album_cover_640': track['track']['album']['images'][0]['url'],
+            'album_cover_300': track['track']['album']['images'][1]['url'],
+            'album_cover_64': track['track']['album']['images'][2]['url'],
+        }
+        
+        data.append(d)
+    
+    return pd.DataFrame(data)
+
+def get_audio_features(track_id, token_info):
     sp = spotipy.Spotify(auth=token_info['access_token'])  
     
     audio_features = sp.audio_features(tracks=track_id)
     
     return audio_features
 
-def sp_get_audio_analysis(track_id, token_info):
+def get_audio_analysis(track_id, token_info):
+
     sp = spotipy.Spotify(auth=token_info['access_token'])  
     
-    audio_analysis = sp.audio_analysis(tracks=track_id)
+    audio_analysis = sp.audio_analysis(track_id=track_id)
     
     return audio_analysis
     

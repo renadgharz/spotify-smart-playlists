@@ -1,7 +1,7 @@
 # app.py
 from flask import Flask, request, url_for, session, redirect, render_template
 from config import config
-from connection import create_spotify_oauth, get_token, sp_get_tracks, sp_get_audio_features, sp_get_audio_analysis
+from connection import create_spotify_oauth, get_token, get_tracks, get_audio_features, get_audio_analysis
 
 app = Flask(__name__)
 app.config.update(config)
@@ -35,7 +35,7 @@ def ssp():
         
         playlist_id = '04j5JZf6upQSeYnWmcNKrH'  # Update with your playlist ID
         
-        tracks = sp_get_tracks(playlist_id, token_info)
+        tracks = get_tracks(playlist_id, token_info)
         
         return tracks
 
