@@ -1,7 +1,7 @@
 # app.py
 from flask import Flask, request, url_for, session, redirect, render_template
 from config import config
-from connection import create_spotify_oauth, get_token, get_tracks
+from connection import create_spotify_oauth, get_token, sp_get_tracks, sp_get_audio_features, sp_get_audio_analysis
 
 app = Flask(__name__)
 app.config.update(config)
@@ -12,14 +12,14 @@ def home():
 
 @app.route('/connect', methods=['POST'])
 def connect():
-    sp_oauth = create_spotify_oauth()
+    sp_oauth = create_spotify_oauth(redirect_uri=url_for('authorize', _external=True))
     auth_url = sp_oauth.get_authorize_url()
     
     return redirect(auth_url)
 
 @app.route('/authorize')
 def authorize():
-    sp_oauth = create_spotify_oauth()
+    sp_oauth = create_spotify_oauth(redirect_uri=url_for('authorize', _external=True))
     code = request.args.get('code')
     token_info = sp_oauth.get_access_token(code)
     session['token_info'] = token_info
@@ -33,9 +33,9 @@ def ssp():
         if not token_info:
             raise Exception('User not logged in.')
         
-        playlist_id = '5vpQYHxtoC0cy8GZMLQ35g'  # Update with your playlist ID
+        playlist_id = '04j5JZf6upQSeYnWmcNKrH'  # Update with your playlist ID
         
-        tracks = get_tracks(playlist_id, token_info)
+        tracks = sp_get_tracks(playlist_id, token_info)
         
         return tracks
 
