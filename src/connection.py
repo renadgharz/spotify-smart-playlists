@@ -137,14 +137,29 @@ def get_album_info(album, token_info):
     
     return album_info
 
-def album_info_td_df(albums):
+def album_info_to_df(albums):
     data = []
     
     for album in albums:
         d = {
-            'album_id': album[0]['id']
+            'album_id': album['id'],
+            'album_name': album['name'],
+            'album_type': album['album_type'],
+            'album_genres': [album['genres']],
+            'album_label': album['label'],
+            'album_popularity': album['popularity'],
+            'album_release_date': album['release_date'],
+            'album_tracks': album['total_tracks'],
+            'album_cover_640': album['images'][0]['url'],
+            'album_cover_300': album['images'][1]['url'],
+            'album_cover_64': album['images'][2]['url'],   
         }
     
         data.append(d)
         
     return pd.DataFrame(data)
+
+def extract_lists(df, column_name):
+    df = df.join(df[column_name].apply(pd.Series).add_prefix(column_name + '_'))
+    df.drop(columns=[column_name], inplace=True)
+    return df
