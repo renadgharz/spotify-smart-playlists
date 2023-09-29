@@ -53,7 +53,6 @@ def tracks_to_df(tracks):
             'artist_id': [artist['id'] for artist in track['track']['album']['artists']],
             'artist_names': [artist['name'] for artist in track['track']['album']['artists']],
             'artist_number': len(track['track']['album']['artists'][0:]),
-            'duration_ms': track['track']['duration_ms'],
             'explicit': track['track']['explicit'],
             'popularity': track['track']['popularity'],
             'preview_url': track['track']['preview_url'],
