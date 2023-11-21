@@ -18,7 +18,8 @@ def create_spotify_oauth(redirect_uri):
         client_id=client_id,
         client_secret=client_secret,
         redirect_uri=redirect_uri,
-        scope='playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public user-library-read'
+        scope='playlist-read-private playlist-read-collaborative playlist-modify-private \
+            playlist-modify-public user-library-read'
     )
 
 def get_token(redirect_uri):
@@ -36,7 +37,7 @@ def get_token(redirect_uri):
 def get_tracks(playlist, token_info):
     sp = spotipy.Spotify(auth=token_info['access_token'])
     
-    all_tracks = sp.playlist_items(playlist_id=playlist)
+    all_tracks = sp.playlist_items(playlist_id=playlist)['items']
 
     return all_tracks
 
