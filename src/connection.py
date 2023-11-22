@@ -4,7 +4,6 @@ import os
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import time
-from flask import url_for, redirect
 import pandas as pd
 
 dotenv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.env'))
@@ -12,8 +11,10 @@ load_dotenv(dotenv_path)
 
 client_id = os.getenv('CLIENT_ID')
 client_secret = os.getenv('CLIENT_SECRET')
+redirect_uri = os.getenv('REDIRECT_URI')
 
-def create_spotify_oauth(redirect_uri):
+
+def create_spotify_oauth():
     return SpotifyOAuth(
         client_id=client_id,
         client_secret=client_secret,
@@ -22,8 +23,8 @@ def create_spotify_oauth(redirect_uri):
             playlist-modify-public user-library-read'
     )
 
-def get_token(redirect_uri):
-    sp_oauth = create_spotify_oauth(redirect_uri=redirect_uri)
+def get_token():
+    sp_oauth = create_spotify_oauth()
     token_info = sp_oauth.get_access_token()
     
     now = int(time.time())
@@ -159,7 +160,9 @@ def album_info_to_df(albums):
         
     return pd.DataFrame(data)
 
-def extract_lists(df, column_name):
-    df = df.join(df[column_name].apply(pd.Series).add_prefix(column_name + '_'))
-    df.drop(columns=[column_name], inplace=True)
-    return df
+def get_similar_artists(id, token_info):
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    
+    similar_artists = sp.album(artist_id=id)
+    
+    return similar_artists
