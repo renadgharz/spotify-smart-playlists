@@ -163,6 +163,6 @@ def album_info_to_df(albums):
 def get_similar_artists(id, token_info):
     sp = spotipy.Spotify(auth=token_info['access_token'])
     
-    similar_artists = sp.album(artist_id=id)
+    similar_artists = sp.artist_related_artists(artist_id=id)['artists']
     
     return similar_artists
