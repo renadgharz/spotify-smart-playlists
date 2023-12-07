@@ -50,13 +50,10 @@ def tracks_to_df(tracks):
             'track_id': track['track']['id'],
             'track_name': track['track']['name'],
             'album_id': track['track']['album']['id'],
-            'album_name': track['track']['album']['name'],
-            'album_date': track['track']['album']['release_date'],
             'artist_id': [artist['id'] for artist in track['track']['album']['artists']],
-            'artist_names': [artist['name'] for artist in track['track']['album']['artists']],
             'artist_number': len(track['track']['album']['artists'][0:]),
             'explicit': track['track']['explicit'],
-            'popularity': track['track']['popularity'],
+            'song_popularity': track['track']['popularity'],
             'preview_url': track['track']['preview_url'],
             'album_cover_640': track['track']['album']['images'][0]['url'],
             'album_cover_300': track['track']['album']['images'][1]['url'],
@@ -99,13 +96,15 @@ def audio_features_to_df(tracks):
     
     return pd.DataFrame(data)
 
-def get_audio_analysis(track_id, token_info):
+## way too expensive, will hit api rate limit instantly, temporarily commenting out
+## would like to eventually revisit this, or maybe turn into another project
+# def get_audio_analysis(track_id, token_info):
 
-    sp = spotipy.Spotify(auth=token_info['access_token'])  
+#     sp = spotipy.Spotify(auth=token_info['access_token'])  
     
-    audio_analysis = sp.audio_analysis(track_id=track_id)
+#     audio_analysis = sp.audio_analysis(track_id=track_id)
     
-    return audio_analysis
+#     return audio_analysis
     
 def get_artist_info(artist_id, token_info):
     sp = spotipy.Spotify(auth=token_info['access_token'])
@@ -146,7 +145,7 @@ def album_info_to_df(albums):
             'album_id': album['id'],
             'album_name': album['name'],
             'album_type': album['album_type'],
-            'album_genres': [album['genres']],
+            # 'album_genres': album['genres'], seems to not be working on spotify's end for now
             'album_label': album['label'],
             'album_popularity': album['popularity'],
             'album_release_date': album['release_date'],
