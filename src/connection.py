@@ -4,7 +4,6 @@ import os
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import time
-from flask import url_for, redirect
 import pandas as pd
 
 dotenv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.env'))
@@ -12,8 +11,10 @@ load_dotenv(dotenv_path)
 
 client_id = os.getenv('CLIENT_ID')
 client_secret = os.getenv('CLIENT_SECRET')
+redirect_uri = os.getenv('REDIRECT_URI')
 
-def create_spotify_oauth(redirect_uri):
+
+def create_spotify_oauth():
     return SpotifyOAuth(
         client_id=client_id,
         client_secret=client_secret,
@@ -22,8 +23,8 @@ def create_spotify_oauth(redirect_uri):
             playlist-modify-public user-library-read'
     )
 
-def get_token(redirect_uri):
-    sp_oauth = create_spotify_oauth(redirect_uri=redirect_uri)
+def get_token():
+    sp_oauth = create_spotify_oauth()
     token_info = sp_oauth.get_access_token()
     
     now = int(time.time())
@@ -49,13 +50,10 @@ def tracks_to_df(tracks):
             'track_id': track['track']['id'],
             'track_name': track['track']['name'],
             'album_id': track['track']['album']['id'],
-            'album_name': track['track']['album']['name'],
-            'album_date': track['track']['album']['release_date'],
-            'artist_id': [artist['id'] for artist in track['track']['album']['artists']],
-            'artist_names': [artist['name'] for artist in track['track']['album']['artists']],
-            'artist_number': len(track['track']['album']['artists'][0:]),
+            'artist_id': [artist['id'] for artist in track['track']['artists']],
+            'artist_number': len(track['track']['artists'][0:]),
             'explicit': track['track']['explicit'],
-            'popularity': track['track']['popularity'],
+            'song_popularity': track['track']['popularity'],
             'preview_url': track['track']['preview_url'],
             'album_cover_640': track['track']['album']['images'][0]['url'],
             'album_cover_300': track['track']['album']['images'][1]['url'],
@@ -98,13 +96,15 @@ def audio_features_to_df(tracks):
     
     return pd.DataFrame(data)
 
-def get_audio_analysis(track_id, token_info):
+## way too expensive, will hit api rate limit instantly, temporarily commenting out
+## would like to eventually revisit this, or maybe turn into another project
+# def get_audio_analysis(track_id, token_info):
 
-    sp = spotipy.Spotify(auth=token_info['access_token'])  
+#     sp = spotipy.Spotify(auth=token_info['access_token'])  
     
-    audio_analysis = sp.audio_analysis(track_id=track_id)
+#     audio_analysis = sp.audio_analysis(track_id=track_id)
     
-    return audio_analysis
+#     return audio_analysis
     
 def get_artist_info(artist_id, token_info):
     sp = spotipy.Spotify(auth=token_info['access_token'])
@@ -145,7 +145,7 @@ def album_info_to_df(albums):
             'album_id': album['id'],
             'album_name': album['name'],
             'album_type': album['album_type'],
-            'album_genres': [album['genres']],
+            # 'album_genres': album['genres'], seems to not be working on spotify's end for now
             'album_label': album['label'],
             'album_popularity': album['popularity'],
             'album_release_date': album['release_date'],
@@ -159,7 +159,9 @@ def album_info_to_df(albums):
         
     return pd.DataFrame(data)
 
-def extract_lists(df, column_name):
-    df = df.join(df[column_name].apply(pd.Series).add_prefix(column_name + '_'))
-    df.drop(columns=[column_name], inplace=True)
-    return df
+def get_similar_artists(id, token_info):
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    
+    similar_artists = sp.artist_related_artists(artist_id=id)['artists']
+    
+    return similar_artists
