@@ -1,4 +1,5 @@
 venv/
+data/
 src/config.py
 
 # Byte-compiled / optimized / DLL files
